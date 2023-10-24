@@ -1,9 +1,10 @@
 ﻿using IdentityMessageBoard.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace IdentityMessageBoard.DataAccess
 {
-    public class MessageBoardContext : DbContext
+    public class MessageBoardContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Message> Messages { get; set; }
 

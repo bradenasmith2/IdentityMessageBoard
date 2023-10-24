@@ -1,22 +1,27 @@
 ﻿using IdentityMessageBoard.DataAccess;
 using IdentityMessageBoard.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
-
 namespace IdentityMessageBoard.Controllers
 {
     public class MessagesController : Controller
     {
         private readonly MessageBoardContext _context;
+        private readonly IEnumerable<ApplicationUser> Users;
 
         public MessagesController(MessageBoardContext context)
         {
             _context = context;
+            Users = new List<ApplicationUser>();
+            Users = _context.Users;
         }
 
         public IActionResult Index()
         {
             var messages = _context.Messages
+                .Include(m => m.Author)
                 .OrderBy(m => m.ExpirationDate)
                 .ToList()
                 .Where(m => m.IsActive()); // LINQ Where(), not EF Where()
@@ -48,19 +53,29 @@ namespace IdentityMessageBoard.Controllers
             return View(allMessages);
         }
 
+        [AllowAnonymous]
         public IActionResult New()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(int userId, string content, int expiresIn)
+        [Authorize]
+        public IActionResult Create(string userId, string content, int expiresIn)
         {
+            var user = _context.ApplicationUsers.Find(userId);
+
+            if(!ModelState.IsValid)
+            {
+                return NotFound();
+            }
+
             _context.Messages.Add(
                 new Message()
                 {
                     Content = content,
-                    ExpirationDate = DateTime.UtcNow.AddDays(expiresIn)
+                    ExpirationDate = DateTime.UtcNow.AddDays(expiresIn),
+                    Author = user
                 });
 
             _context.SaveChanges();
