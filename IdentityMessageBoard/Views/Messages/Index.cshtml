@@ -1,21 +1,59 @@
-﻿@model IEnumerable<Message>
+﻿@using Microsoft.AspNetCore.Identity;
+@model IEnumerable<Message>
+@{
+    ApplicationUser user = ViewData["CurrentUser"] as ApplicationUser;
+}
+@inject UserManager<ApplicationUser> UserManager;
 
-<h2>Active Messages</h2>
 
-<a asp-controller="Messages" asp-action="New"><button>Add New Message</button></a>
-
-<table class="table mt-5">
-    <thead>
-        <tr>
-            <th scope="col">Content</th>
-            <th scope="col">Expiration Date</th>
-        </tr>
-    </thead>
-    @foreach (var message in Model)
+@if(user != null)
+{
+    if(Model.Count() == 0 || Model == null)//has account, but no messages
     {
-        <tr>
-            <td>@message.Content</td>
-            <td>@message.ExpirationDate.ToShortDateString()</td>
-        </tr>
+        <h2>You currently do not have any messages.</h2>
+        <h4><a href="/Messages/New">Add one!</a></h4>
     }
-</table>
+
+    else if(Model.Count() != 0)
+    {
+        <h2>My Messages</h2>
+        <a asp-controller="Messages" asp-action="New"><button>Add New Message</button></a>
+        <table class="table mt-5">
+            <thead>
+                <tr>
+
+                    <th scope="col">Content</th>
+                    <th scope="col">Expiration Date</th>
+                    <th scope="col">Author</th>
+                    <th scope="col">Options</th>
+                </tr>
+            </thead>
+
+            @foreach (var msg in Model)
+            {
+                if (msg.Author == user && msg.Author != null)
+                {
+                    <tr>
+                        <td>@msg.Content</td>
+                        <td>@msg.ExpirationDate.ToShortDateString()</td>
+                        <td>@msg.Author.Email</td>
+
+                        @if (User != null && User.IsInRole("SuperUser"))//check role
+                        {
+                            if (msg.Author == user)//verify author
+                            {
+                                <td><a href="/user/@UserManager.GetUserId(User)/messages/@msg.Id/edit">Edit</a>|<a href="/user/@UserManager.GetUserId(User)/messages/@msg.Id/delete" onclick="confirm('Are you sure you want to delete this message?')">Delete</a></td>
+                            }
+                        }
+                    </tr>
+                }
+            }
+        </table>
+    }
+}
+    
+else
+{
+    <h2>You currently do not have any messages.</h2>
+    <h4><a href="/Identity/Account/Register">Sign up</a> to add one!</h4>
+}

@@ -1,4 +1,6 @@
-﻿@model IDictionary<string, List<Message>>
+﻿@using Microsoft.AspNetCore.Identity;
+@model IDictionary<string, List<Message>>
+@inject UserManager<ApplicationUser> UserManager;
 
 <h2>Active Messages</h2>
 
@@ -7,6 +9,7 @@
         <tr>
             <th scope="col">Content</th>
             <th scope="col">Expiration Date</th>
+            <th scope="col">Options</th>
         </tr>
     </thead>
     @foreach (var message in Model["active"])

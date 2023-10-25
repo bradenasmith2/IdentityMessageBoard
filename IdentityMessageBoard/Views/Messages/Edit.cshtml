@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@inject UserManager<ApplicationUser> UserManager;
+@model Message
+
+<form method="post" action="/user/@UserManager.GetUserId(User)/messages/@Model.Id/edit/submit"><!--The User id and message id are very long.-->
+    <input type="hidden" name="UserId" value="@UserManager.GetUserId(User)" />
+    <div>
+        <label for="Content">Content</label>
+        <input type="text" name="Content" value="@Model.Content"/>
+    </div>
+    <div>
+        <label for="ExpiresIn">Expires in (num days)</label>
+        <input type="number" name="ExpiresIn" value="@Model.ExpirationDate"/>
+    </div>
+    <button type="submit">Confirm Changes</button>
+</form>
